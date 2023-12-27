@@ -5,7 +5,7 @@ a simple telegram bot for searching images and gifs in telegram inline mode
 
 🔎This bot uses Google's Programmable Search Engine to help you find and share images and gifs using Google search in telegram's inline mode.
 
-## Rquired Libraries
+## Required Libraries
 
 ```python-telegram-bot```
 
