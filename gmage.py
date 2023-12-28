@@ -27,9 +27,9 @@ try:
             api_key.append(line.strip())  # Strip any leading/trailing whitespaces
     logging.info(f"no of api_keys: {len(api_key)}")
 except FileNotFoundError:
-    print("API KEYS File not found.")
+    logging.error("API KEYS File not found.")
 except Exception as e:
-    print("An error occurred:", e)
+    logging.error("An error occurred:", e)
 
 
 # Save new User Ids
