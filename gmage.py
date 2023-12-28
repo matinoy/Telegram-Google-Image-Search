@@ -12,8 +12,25 @@ import os
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename='gmage_log.log', encoding='utf-8', level=logging.INFO)
 
 # Define the API key and the search engine ID
-api_key = "your-google-api-key"
+global api_key, akindex, limit
 search_engine_id = "your-google-search-engine-cx-id"
+akindex = 0
+limit = 0
+
+# loading apikeys into a list
+file_path = "apikeys.txt"
+api_key = []
+try:
+    with open(file_path, "r") as file:
+        # Read each line and add it to the list
+        for line in file:
+            api_key.append(line.strip())  # Strip any leading/trailing whitespaces
+    logging.info(f"no of api_keys: {len(api_key)}")
+except FileNotFoundError:
+    print("API KEYS File not found.")
+except Exception as e:
+    print("An error occurred:", e)
+
 
 # Save new User Ids
 def save_user_info(update: Update, context: CallbackContext):
@@ -41,6 +58,7 @@ def save_user_info(update: Update, context: CallbackContext):
 # Handler function for inline queries
 @run_async
 def inline_search(update, context):
+    global api_key, akindex, limit
     query = update.inline_query.query
     if not query:
         return
@@ -50,18 +68,36 @@ def inline_search(update, context):
         query = urllib.parse.quote_plus(query)
         gquery = urllib.parse.quote_plus(gquery)
 
-        url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}&searchType=image&num=10"
-        url2 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}&searchType=image&num=10&start=11"
-        url3 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={query}&searchType=image&num=10&start=21"
-        if re.search(r'\b(?:gif|gifs)\b', query, re.IGNORECASE):
-            url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={gquery}&searchType=image&fileType=gif&num=10"
-            url2 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={gquery}&searchType=image&fileType=gif&num=10&start=11"
-            url3 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key}&cx={search_engine_id}&q={gquery}&searchType=image&fileType=gif&num=10&start=21"
-        
         payload = {}
-        headers = {}
+        headers = {
+        'X-Referer': 'https://explorer.apis.google.com'
+        }
 
+        url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={query}&searchType=image&num=10"
         response = requests.request("GET", url, headers=headers, data=payload)
+
+        limit+=1
+        if(limit == 100):
+            akindex+=1
+            if(akindex==len(api_key)):
+                    akindex=0
+            limit = 0
+        while response.status_code != 200:
+            akindex+=1
+            if(akindex==len(api_key)):
+                akindex=0
+            logging.info(f"new key: {api_key[akindex]}")
+            url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={query}&searchType=image&num=10"
+            response = requests.request("GET", url, headers=headers, data=payload)
+
+        url2 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={query}&searchType=image&num=10&start=11"
+        url3 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={query}&searchType=image&num=10&start=21"
+        if re.search(r'\b(?:gif|gifs)\b', query, re.IGNORECASE):
+            url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={gquery}&searchType=image&fileType=gif&num=10"
+            url2 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={gquery}&searchType=image&fileType=gif&num=10&start=11"
+            url3 = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={gquery}&searchType=image&fileType=gif&num=10&start=21"
+        
+
         response.raise_for_status()
         
         response = response.json()["items"]
@@ -73,13 +109,14 @@ def inline_search(update, context):
         if len(response)>0:
             results = []
             for i in range (len(response)):
-                photo_url = response[i]["link"]
-                thumb_url = response[i]["link"]
-                if re.search(r'\b(?:gif|gifs)\b', query, re.IGNORECASE):
-                    result = InlineQueryResultGif(id=str(i), title=response[i]["title"], gif_url=photo_url, thumb_url=thumb_url, gif_width=512, gif_height=512)
-                else:
-                    result = InlineQueryResultPhoto(id=str(i), title=response[i]["title"], photo_url=photo_url, thumb_url=thumb_url, photo_width=512, photo_height=512)
-                results.append(result)
+                if("." in os.path.basename(response[i]["link"])):
+                    photo_url = response[i]["link"]
+                    thumb_url = response[i]["link"]
+                    if re.search(r'\b(?:gif|gifs)\b', query, re.IGNORECASE) and  ".gif" in photo_url.lower():
+                        result = InlineQueryResultGif(id=str(i), title=response[i]["title"], gif_url=photo_url, thumb_url=thumb_url, gif_width=512, gif_height=512)
+                    else:
+                        result = InlineQueryResultPhoto(id=str(i), title=response[i]["title"], photo_url=photo_url, thumb_url=thumb_url, photo_width=512, photo_height=512)
+                    results.append(result)
             
             update.inline_query.answer(results)
 

@@ -12,7 +12,8 @@ a simple telegram bot for searching images and gifs in telegram inline mode
 ```requests```
 ## "Api key" and "CX Code"
 
-to obtain an "api key" and a "cx code" you need to make a custom programmable search engine [here](https://programmablesearchengine.google.com/controlpanel/all)
+to obtain "api keys" and a "cx code" you need to make a custom programmable search engine [here](https://programmablesearchengine.google.com/controlpanel/all)
+put your api keys inside "apikeys.txt" in the same directory (put each api-key in a seprate line)
 
 ## Used By
 
