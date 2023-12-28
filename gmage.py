@@ -6,6 +6,7 @@ import re
 import urllib.parse
 import requests
 import logging
+import sys
 import os
 
 # start logging to file
@@ -25,11 +26,15 @@ try:
         # Read each line and add it to the list
         for line in file:
             api_key.append(line.strip())  # Strip any leading/trailing whitespaces
+    if(len(api_key)==0):
+        raise Exception("0 Apikeys found")
     logging.info(f"no of api_keys: {len(api_key)}")
 except FileNotFoundError:
     logging.error("API KEYS File not found.")
+    sys.exit()
 except Exception as e:
-    logging.error("An error occurred:", e)
+    logging.error(f"An error occurred: {e}")
+    sys.exit()
 
 
 # Save new User Ids
