@@ -82,9 +82,13 @@ def inline_search(update, context):
             if(akindex==len(api_key)):
                     akindex=0
             limit = 0
+        antiloop=0
         while response.status_code != 200:
+            if(antiloop==2):
+                raise Exception("all api keys are dead")
             akindex+=1
             if(akindex==len(api_key)):
+                antiloop+=1
                 akindex=0
             logging.info(f"new key: {api_key[akindex]}")
             url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={query}&searchType=image&num=10"
