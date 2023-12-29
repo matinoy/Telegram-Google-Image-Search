@@ -149,18 +149,20 @@ def start(update: Update, context: CallbackContext) -> None:
 
 # Define a function to respond back all received messages with the start message
 def respond(update: Update, context: CallbackContext) -> None:
+    response = f"🔎This bot can help you find and share images and gifs using Google search. It works automatically, no need to add it anywhere. Simply open any of your chats and type `@{context.bot.username} something` in the message field. Then tap on a result to send.\n\nFor example, try typing `@{context.bot.username} cute cats` here.\n\n🖼To search for Gifs, make sure to include the word `gif` or `gifs` inside your search query to directly load gifs from google images.\n\nFor example, try typing `@{context.bot.username} cute cat gifs` here.\n\n\nnote: to exclude the word `gif` or `gifs` from your query while searching for gifs, use `-gif` and `-gifs` instead"        
     try:
         if(update.message.via_bot.username == context.bot.username):
             return 0
+        else:
+            update.message.reply_text(response, parse_mode=ParseMode.MARKDOWN)
     except:
-        response = f"🔎This bot can help you find and share images and gifs using Google search. It works automatically, no need to add it anywhere. Simply open any of your chats and type `@{context.bot.username} something` in the message field. Then tap on a result to send.\n\nFor example, try typing `@{context.bot.username} cute cats` here.\n\n🖼To search for Gifs, make sure to include the word `gif` or `gifs` inside your search query to directly load gifs from google images.\n\nFor example, try typing `@{context.bot.username} cute cat gifs` here.\n\n\nnote: to exclude the word `gif` or `gifs` from your query while searching for gifs, use `-gif` and `-gifs` instead"        
         update.message.reply_text(response, parse_mode=ParseMode.MARKDOWN)
 
 # Set up the bot and start polling for inline queries
 updater = Updater("your-telegram-bot-token", use_context=True)
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, respond))
+dispatcher.add_handler(MessageHandler(Filters.all, respond))
 dispatcher.add_handler(InlineQueryHandler(inline_search))
 updater.start_polling()
 updater.idle()
