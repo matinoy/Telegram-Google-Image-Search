@@ -7,7 +7,7 @@ a simple telegram bot for searching images and gifs in telegram inline mode
 
 ## Required Libraries
 
-```python-telegram-bot```
+```python-telegram-bot==13.7```
 
 ```requests```
 ## "Api key" and "CX Code"
