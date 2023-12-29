@@ -79,6 +79,8 @@ def inline_search(update, context):
         }
 
         url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={query}&searchType=image&num=10"
+        if re.search(r'\b(?:gif|gifs)\b', query, re.IGNORECASE):
+            url = f"https://customsearch.googleapis.com/customsearch/v1?key={api_key[akindex]}&cx={search_engine_id}&q={gquery}&searchType=image&fileType=gif&num=10"
         response = requests.request("GET", url, headers=headers, data=payload)
 
         limit+=1
